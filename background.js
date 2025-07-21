@@ -1,20 +1,29 @@
-chrome.browserAction.onClicked.addListener(() => {
-  chrome.tabs.query({ url: "https://github.com/notifications*" }, (tabs) => {
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    const tabs = await chrome.tabs.query({ url: "https://github.com/notifications*" });
+    
     if (tabs.length > 0) {
-      const tab = tabs[0];
-      chrome.tabs.update(tab.id, { active: true });
-      chrome.tabs.executeScript(tab.id, { code: `(${startNotificationRandomizer.toString()})()` });
+      const notificationTab = tabs[0];
+      await chrome.tabs.update(notificationTab.id, { active: true });
+      await chrome.scripting.executeScript({
+        target: { tabId: notificationTab.id },
+        func: startNotificationRandomizer
+      });
     } else {
-      chrome.tabs.create({ url: "https://github.com/notifications" }, (newTab) => {
-        chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
-          if (tabId === newTab.id && changeInfo.status === 'complete') {
-            chrome.tabs.onUpdated.removeListener(listener);
-            chrome.tabs.executeScript(tabId, { code: `(${startNotificationRandomizer.toString()})()` });
-          }
-        });
+      const newTab = await chrome.tabs.create({ url: "https://github.com/notifications" });
+      chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
+        if (tabId === newTab.id && changeInfo.status === 'complete') {
+          chrome.tabs.onUpdated.removeListener(listener);
+          chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: startNotificationRandomizer
+          });
+        }
       });
     }
-  });
+  } catch (error) {
+    console.error('Error in extension:', error);
+  }
 });
 
 function startNotificationRandomizer() {

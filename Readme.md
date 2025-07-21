@@ -1,6 +1,6 @@
 # 🔀 Random GitHub Notification
 
-**Firefox add-on which adds a toolbar button to open a random GitHub notification of yours!**
+**Chrome extension which adds a toolbar button to open a random GitHub notification of yours!**
 
 Very useful to catch up and work through notifications – with the excitement of randomness.
 
